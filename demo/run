@@ -21,10 +21,10 @@ git commit -m 'Intialize repository with dvc'
 
 : fetch the dataset
 mkdir data
-wget -P data https://dvc.org/s3/so/100K/Posts.xml.zip || cp ../.pre/Posts.xml.zip data/Posts.xml.zip
+wget -P data https://dvc.org/s3/so/100K/Posts.xml.zip
 du -sh data/*
 
-: add externals ource to dvc
+: add external source to dvc
 dvc add data/Posts.xml.zip
 git add .
 git commit -m 'Add posts xml dataset to dvc inputs'
@@ -44,7 +44,7 @@ dvc run \
     -d data/Posts.xml.zip \
     -o data/Posts.xml \
     -f data/Posts.xml.dvc \
-    unzip Posts.xml.zip
+    unzip data/Posts.xml.zip -d data
 du -sh data/*
 cat data/Posts.xml.dvc
 cat data/.gitignore
@@ -53,16 +53,19 @@ cat data/.gitignore
 git add .
 git commit -m 'Add unzip step to pipeline'
 
-: convert xml to tsv
+: now we start coding
+mkdir code
 cp ../.pre/conf.py code/
+
+: convert xml to tsv
 cp ../.pre/xml_to_tsv.py code/
 dvc run \
     -d code/conf.py \
-    -d code/xml_to_csv.py \
+    -d code/xml_to_tsv.py \
     -d data/Posts.xml \
     -o data/Posts.tsv \
     -f data/Posts.tsv.dvc \
-    python code/xml_to_csv.py
+    python code/xml_to_tsv.py
 
 : split training and testing samples
 cp ../.pre/split_train_test.py code/
@@ -80,6 +83,7 @@ git add .
 git commit -m 'Add train test split to pipeline'
 
 : featurization script
+cp ../.pre/featurization.py code/
 dvc run \
     -d code/conf.py \
     -d code/featurization.py \
@@ -91,20 +95,22 @@ dvc run \
     python code/featurization.py
 
 : model training
+cp ../.pre/train_model.py code/
  dvc run \
-    -d data/matrix-train.p \
-    -d code/train_model.py \
     -d code/conf.py \
+    -d code/train_model.py \
+    -d data/matrix-train.p \
     -o data/model.p \
     -f data/model.dvc \
     python code/train_model.py 42
 
 : model evaluation
+cp ../.pre/evaluate.py code/
  dvc run \
+    -d code/conf.py \
+    -d code/evaluate.py \
     -d data/model.p \
     -d data/matrix-test.p \
-    -d code/evaluate.py \
-    -d code/conf.py \
     -M data/eval.txt \
     -f Dvcfile \
     python code/evaluate.py
@@ -112,7 +118,7 @@ dvc run \
 : commit
 git status -s
 git add .
-git commit
+git commit -m 'Add model training and evaluation'
 
 : congratulations
 cat data/eval.txt
