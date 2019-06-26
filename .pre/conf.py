@@ -2,7 +2,7 @@ import os
 
 data_dir = 'data'
 
-source_xml = os.path.join(data_dir, 'Posts.xml')
+source_xml = os.path.join(data_dir, 'PostsSubset.xml')
 source_tsv = os.path.join(data_dir, 'Posts.tsv')
 
 train_tsv = os.path.join(data_dir, 'Posts-train.tsv')

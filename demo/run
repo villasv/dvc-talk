@@ -19,7 +19,8 @@ git commit -m 'Intialize repository with dvc'
 
 : fetch the dataset
 mkdir data
-wget -P data https://dvc.org/s3/so/100K/Posts.xml.zip
+#wget -P data https://dvc.org/s3/so/100K/Posts.xml.zip
+cp ../../Posts.xml.zip data/
 du -sh data/*
 
 : add external source to dvc
@@ -42,9 +43,17 @@ dvc run \
     -o data/Posts.xml \
     -f data/Posts.xml.dvc \
     unzip data/Posts.xml.zip -d data
+
+: use a smaller dataset to go faster
+dvc run \
+    -d data/Posts.xml \
+    -o data/PostsSubset.xml \
+    -f data/PostsSubset.xml.dvc \
+    "head -n 10000 data/Posts.xml > data/PostsSubset.xml"
+
 du -sh data/*
 head -n 1 data/Posts.xml
-cat data/Posts.xml.dvc
+cat data/Posts.xml.dvc data/PostsSubset.xml.dvc
 
 : commit
 git add .
@@ -59,7 +68,7 @@ cp ../.pre/xml_to_tsv.py code/
 dvc run \
     -d code/conf.py \
     -d code/xml_to_tsv.py \
-    -d data/Posts.xml \
+    -d data/PostsSubset.xml \
     -o data/Posts.tsv \
     -f data/Posts.tsv.dvc \
     python code/xml_to_tsv.py
