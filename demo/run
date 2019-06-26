@@ -43,8 +43,8 @@ dvc run \
     -f data/Posts.xml.dvc \
     unzip data/Posts.xml.zip -d data
 du -sh data/*
+head -n 1 data/Posts.xml
 cat data/Posts.xml.dvc
-cat data/.gitignore
 
 : commit
 git add .
@@ -63,6 +63,7 @@ dvc run \
     -o data/Posts.tsv \
     -f data/Posts.tsv.dvc \
     python code/xml_to_tsv.py
+head -n 1 data/Posts.tsv
 
 : split training and testing samples
 cp ../.pre/split_train_test.py code/
@@ -113,7 +114,6 @@ cp ../.pre/evaluate.py code/
     python code/evaluate.py
 
 : commit
-git status -s
 git add .
 git commit -m 'Add model training and evaluation'
 
