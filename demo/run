@@ -12,8 +12,6 @@ dvc init
 
 : lets probe around a bit
 ls -a .dvc
-cat .dvc/.gitignore
-git status -s
 
 : commit
 git add -A
@@ -30,7 +28,6 @@ git add .
 git commit -m 'Add posts xml dataset to dvc inputs'
 
 : probing around a bit more
-cat data/.gitignore
 cat data/Posts.xml.zip.dvc
 du -sh .dvc/cache/ec/*
 
