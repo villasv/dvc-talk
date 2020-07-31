@@ -39,6 +39,7 @@ dvc run -n unzip-digit-recognizer \
     unzip data/digit-recognizer.zip -d data/digit-recognizer
 
 du -sh data/digit-recognizer/*
+cat .gitignore
 cat dvc.yaml
 cat dvc.lock
 
@@ -81,15 +82,17 @@ git commit -m 'Add model training and evaluation'
 dvc dag
 
 : congratulations
-cat data/eval.txt
+cat data/score.txt
 dvc metrics show
 
-### Reproducibility
+# do something to change the pipeline
 
 : everything is cached
 dvc repro
 
-### Registry
+# extra topics
 
 : repositories become data registries
 dvc list https://github.com/iterative/dataset-registry get-started
+
+: talk about experiments, plots, reflinks/hardlinks/softlinks/copy

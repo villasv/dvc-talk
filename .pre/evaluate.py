@@ -8,6 +8,8 @@ test_images = pd.read_csv(splits / "test_images.csv")
 test_labels = pd.read_csv(splits / "test_labels.csv")
 clf = load(sys.argv[2])
 
+# test_images[test_images>0]=1
+
 mean_accuracy = clf.score(test_images,test_labels)
 
 with open(sys.argv[3], 'w') as fd:
