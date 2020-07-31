@@ -1,30 +1,16 @@
-import numpy as np
-from sklearn.ensemble import RandomForestClassifier
+import pathlib
 import sys
-import conf
-import pickle
 
-if len(sys.argv) != 2:
-    sys.stderr.write('Arguments error. Usage:\n')
-    sys.stderr.write('\tpython train_model.py INPUT_MATRIX_FILE SEED OUTPUT_MODEL_FILE\n')
-    sys.exit(1)
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn import svm
+from joblib import dump
 
-input = conf.train_matrix
-output = conf.model
-seed = int(sys.argv[1])
+splits = pathlib.Path(sys.argv[1])
+train_images = pd.read_csv(splits / "train_images.csv")
+train_labels = pd.read_csv(splits / "train_labels.csv")
 
-with open(input, 'rb') as fd:
-    matrix = pickle.load(fd)
-
-labels = np.squeeze(matrix[:, 1].toarray())
-x = matrix[:, 2:]
-
-sys.stderr.write('Input matrix size {}\n'.format(matrix.shape))
-sys.stderr.write('X matrix size {}\n'.format(x.shape))
-sys.stderr.write('Y matrix size {}\n'.format(labels.shape))
-
-clf = RandomForestClassifier(n_estimators=100, n_jobs=2, random_state=seed)
-clf.fit(x, labels)
-
-with open(output, 'wb') as fd:
-    pickle.dump(clf, fd)
+clf = svm.SVC()
+print(train_labels)
+clf.fit(train_images, train_labels.values)
+dump(clf, sys.argv[2])

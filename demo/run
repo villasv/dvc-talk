@@ -33,77 +33,38 @@ cat data/digit-recognizer.zip.dvc
 tree .dvc/cache/ -sh
 
 : unzip is the first pipeline step
-dvc run -n dataset\
+dvc run -n unzip-digit-recognizer \
     -d data/digit-recognizer.zip \
-    -o data/dataset \
-    unzip data/digit-recognizer.zip -d dataset
+    -o data/digit-recognizer \
+    unzip data/digit-recognizer.zip -d data/digit-recognizer
 
-: use a smaller dataset to go faster
-dvc run -n \
-    -d data/Posts.xml \
-    -o data/PostsSubset.xml \
-    -f data/PostsSubset.xml.dvc \
-    "head -n 10000 data/Posts.xml > data/PostsSubset.xml"
-
-du -sh data/*
-head -n 1 data/Posts.xml
-cat data/Posts.xml.dvc data/PostsSubset.xml.dvc
+du -sh data/digit-recognizer/*
+cat dvc.yaml
+cat dvc.lock
 
 : commit
-git add .
+git add data/.gitignore dvc.yaml dvc.lock
 git commit -m 'Add unzip step to pipeline'
+dvc dag
 
 : now we start coding
 mkdir code
-cp ../.pre/conf.py code/
-
-: convert xml to tsv
-cp ../.pre/xml_to_tsv.py code/
-dvc run \
-    -d code/conf.py \
-    -d code/xml_to_tsv.py \
-    -d data/PostsSubset.xml \
-    -o data/Posts.tsv \
-    -f data/Posts.tsv.dvc \
-    python code/xml_to_tsv.py
-head -n 1 data/Posts.tsv
 
 : split training and testing samples
 cp ../.pre/split_train_test.py code/
-dvc run \
-    -d code/conf.py \
+dvc run -n split-train-test \
     -d code/split_train_test.py \
-    -d data/Posts.tsv \
-    -o data/Posts-test.tsv \
-    -o data/Posts-train.tsv \
-    -f data/Posts-split.dvc \
-    python code/split_train_test.py 0.33 42
-
-: commit
-git add .
-git commit -m 'Add train test split to pipeline'
-
-: featurization script
-cp ../.pre/featurization.py code/
-dvc run \
-    -d code/conf.py \
-    -d code/featurization.py \
-    -d data/Posts-train.tsv \
-    -d data/Posts-test.tsv \
-    -o data/matrix-train.p \
-    -o data/matrix-test.p \
-    -f data/matrix-split.dvc \
-    python code/featurization.py
+    -d data/digit-recognizer/train.csv \
+    -o data/splits \
+    python code/split_train_test.py ./data/digit-recognizer/train.csv ./data/splits
 
 : model training
 cp ../.pre/train_model.py code/
- dvc run \
-    -d code/conf.py \
+dvc run -n train-model \
     -d code/train_model.py \
-    -d data/matrix-train.p \
-    -o data/model.p \
-    -f data/model.dvc \
-    python code/train_model.py 42
+    -d data/splits \
+    -o data/model.dump \
+    python code/train_model.py ./data/splits ./data/model.dump
 
 : model evaluation
 cp ../.pre/evaluate.py code/
@@ -128,3 +89,8 @@ dvc metrics show
 
 : everything is cached
 dvc repro
+
+### Registry
+
+: repositories become data registries
+dvc list https://github.com/iterative/dataset-registry get-started
