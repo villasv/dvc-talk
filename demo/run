@@ -68,18 +68,17 @@ dvc run -n train-model \
 
 : model evaluation
 cp ../.pre/evaluate.py code/
- dvc run \
-    -d code/conf.py \
+dvc run -n evaluate \
     -d code/evaluate.py \
-    -d data/model.p \
-    -d data/matrix-test.p \
-    -M data/eval.txt \
-    -f Dvcfile \
-    python code/evaluate.py
+    -d data/splits \
+    -d data/model.dump \
+    -M data/score.txt \
+    python code/evaluate.py data/splits data/model.dump data/score.txt
 
 : commit
-git add .
+git add -A
 git commit -m 'Add model training and evaluation'
+dvc dag
 
 : congratulations
 cat data/eval.txt

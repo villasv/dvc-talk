@@ -1,28 +1,14 @@
-from sklearn.metrics import precision_recall_curve
+import pathlib
 import sys
-import sklearn.metrics as metrics
-import conf
-import pickle
+from joblib import load
+import pandas as pd
 
-model_file = conf.model
-test_matrix_file = conf.test_matrix
-metrics_file = 'data/eval.txt'
+splits = pathlib.Path(sys.argv[1])
+test_images = pd.read_csv(splits / "test_images.csv")
+test_labels = pd.read_csv(splits / "test_labels.csv")
+clf = load(sys.argv[2])
 
-with open(model_file, 'rb') as fd:
-    model = pickle.load(fd)
+mean_accuracy = clf.score(test_images,test_labels)
 
-with open(test_matrix_file, 'rb') as fd:
-    matrix = pickle.load(fd)
-
-labels = matrix[:, 1].toarray()
-x = matrix[:, 2:]
-
-predictions_by_class = model.predict_proba(x)
-predictions = predictions_by_class[:,1]
-
-precision, recall, thresholds = precision_recall_curve(labels, predictions)
-
-auc = metrics.auc(recall, precision)
-#print('AUC={}'.format(metrics.auc(recall, precision)))
-with open(metrics_file, 'w') as fd:
-    fd.write('AUC: {:4f}\n'.format(auc))
+with open(sys.argv[3], 'w') as fd:
+    fd.write('MeanAcc: {:4f}\n'.format(mean_accuracy))

@@ -10,7 +10,9 @@ splits = pathlib.Path(sys.argv[1])
 train_images = pd.read_csv(splits / "train_images.csv")
 train_labels = pd.read_csv(splits / "train_labels.csv")
 
+# test_images[test_images>0]=1
+# train_images[train_images>0]=1
+
 clf = svm.SVC()
-print(train_labels)
-clf.fit(train_images, train_labels.values)
+clf.fit(train_images, train_labels.values.ravel())
 dump(clf, sys.argv[2])
