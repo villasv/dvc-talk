@@ -9,6 +9,7 @@ verify_ssl = true
 dvc = "*"
 pandas = "*"
 scikit-learn = "*"
+kaggle = "*"
 
 [requires]
 python_version = "3.8"

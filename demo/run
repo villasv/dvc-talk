@@ -10,42 +10,36 @@ git init
 : initialize the dvc project
 dvc init
 
-: lets probe around a bit
-ls -a .dvc
+: install useful git hooks
+dvc install
 
-: commit
-git add -A
+: check git
+git status
 git commit -m 'Intialize repository with dvc'
 
 : fetch the dataset
-mkdir data
-#wget -P data https://dvc.org/s3/so/100K/Posts.xml.zip
-cp ../../Posts.xml.zip data/
+mkdir data && pushd data || exit
+kaggle competitions download -c digit-recognizer
+popd || exit
 du -sh data/*
 
 : add external source to dvc
-dvc add data/Posts.xml.zip
-git add .
-git commit -m 'Add posts xml dataset to dvc inputs'
+dvc add data/digit-recognizer.zip
+git add data/.gitignore data/digit-recognizer.zip.dvc
+git commit -m 'Add digit recognizer competition data'
 
 : probing around a bit more
-cat data/Posts.xml.zip.dvc
-du -sh .dvc/cache/ec/*
-
-: git-lfs uses copies, we and git-annex are smarter
-ls -i data/Posts.xml.zip
-ls -i .dvc/cache/ec/
-du -sh .
+cat data/digit-recognizer.zip.dvc
+tree .dvc/cache/ -sh
 
 : unzip is the first pipeline step
-dvc run \
-    -d data/Posts.xml.zip \
-    -o data/Posts.xml \
-    -f data/Posts.xml.dvc \
-    unzip data/Posts.xml.zip -d data
+dvc run -n dataset\
+    -d data/digit-recognizer.zip \
+    -o data/dataset \
+    unzip data/digit-recognizer.zip -d dataset
 
 : use a smaller dataset to go faster
-dvc run \
+dvc run -n \
     -d data/Posts.xml \
     -o data/PostsSubset.xml \
     -f data/PostsSubset.xml.dvc \
